@@ -1,117 +1,95 @@
 import streamlit as st
 import pandas as pd
 
-from autogluon.tabular import TabularPredictor
-
-# ====================================
-# LOAD MODEL
-# ====================================
-
-predictor = TabularPredictor.load(
-    "ag-20260708_232811"
+st.set_page_config(
+    page_title="Long-Acting Drug Predictor",
+    layout="wide"
 )
 
-THRESHOLD = 0.05
+@st.cache_data
+def load_data():
+    return pd.read_csv("website_predictions.csv")
 
-# ====================================
-# LOAD DATA
-# ====================================
+df = load_data()
 
-df = pd.read_csv(
-    "website_prediction_dataset.csv"
-)
-
-# ====================================
-# PAGE TITLE
-# ====================================
-
-st.title(
-    "Long-Acting Drug Predictor"
-)
+st.title("Long-Acting Drug Predictor")
 
 st.write(
-    "Enter the name of a compound."
+    """
+    Search for a drug or compound to view:
+    - Long-acting prediction
+    - Model confidence
+    - Physicochemical properties
+    - Key factors influencing the prediction
+    """
 )
 
-# ====================================
-# INPUT
-# ====================================
-
-drug_name = st.text_input(
-    "Drug Name"
-)
-
-# ====================================
-# SEARCH
-# ====================================
+drug_name = st.text_input("Drug Name")
 
 if drug_name:
 
-    matches = df[
-        df["Name"]
-        .astype(str)
-        .str.upper()
+    result = df[
+        df["name"].astype(str).str.upper()
         ==
         drug_name.upper()
     ]
 
-    if len(matches) == 0:
+    if result.empty:
 
-        st.error(
-            "Compound not found."
-        )
+        st.error("Compound not found.")
 
     else:
 
-        row = matches.iloc[[0]]
+        row = result.iloc[0]
 
-        model_inputs = row[
-        [
-            "PolarSurfaceArea_A2_Combined_Avg",
-            "Solubility_g_L_Combined_Avg",
-            "FractionUnionized_Acid_pH7_4_Combined_Avg",
-            "FractionUnionized_Base_pH7_4_Combined_Avg",
-            "MolecularWeight_g_mol_Combined_Avg",
-            "Acidic_pKa_Combined_Avg",
-            "Basic_pKa_Combined_Avg",
-            "LogP_Combined_Avg",
-            "HBondRatio_Donor_Acceptor_Combined_Avg"
-        ]
-        ]
+        st.header("Prediction")
 
-        probability = predictor.predict_proba(
-            model_inputs
-        )[1].iloc[0]
-
-        prediction = (
-            probability >= THRESHOLD
-        )
-
-        st.header(
-            "Prediction"
-        )
-
-        if prediction:
-
-            st.success(
-                "Predicted Long-Acting"
-            )
-
+        if row["Prediction"] == "Likely Long-Acting":
+            st.success(row["Prediction"])
         else:
-
-            st.warning(
-                "Predicted Not Long-Acting"
-            )
+            st.warning(row["Prediction"])
 
         st.metric(
-            "Probability",
-            f"{probability:.1%}"
+            "Model Confidence",
+            f"{row['Probability']:.1%}"
         )
 
-        st.header(
-            "Physicochemical Properties"
-        )
+        st.header("Why the Model Predicted This")
 
-        st.dataframe(
-            model_inputs.T
-        )
+        reasons = []
+
+        if row["MolecularWeight_g_mol_Combined_Avg_Percentile"] > 0.75:
+            reasons.append("High molecular weight")
+
+        if row["PolarSurfaceArea_A2_Combined_Avg_Percentile"] > 0.75:
+            reasons.append("High polar surface area")
+
+        if row["LogP_Combined_Avg_Percentile"] > 0.75:
+            reasons.append("High lipophilicity (LogP)")
+
+        if row["Solubility_g_L_Combined_Avg_Percentile"] < 0.25:
+            reasons.append("Low aqueous solubility")
+
+        if row["MeltingPoint_C_Combined_Avg_Percentile"] > 0.75:
+            reasons.append("High melting point")
+
+        if row["FractionUnionized_Base_pH7_4_Combined_Avg_Percentile"] < 0.25:
+            reasons.append("Low fraction unionized base")
+
+        if reasons:
+            for reason in reasons:
+                st.write("✅", reason)
+        else:
+            st.write("No dominant factors identified.")
+
+        st.header("Physicochemical Properties")
+
+        properties = pd.DataFrame({
+            "Property": [
+                "Molecular Weight",
+                "Polar Surface Area",
+                "LogP",
+                "Solubility",
+                "Acidic pKa",
+                "Basic pKa",
+                "
