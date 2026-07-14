@@ -41,15 +41,17 @@ st.write(
     """
 )
 
+drug_name = st.selectbox(
+    "Drug Name",
+    options=[""] + sorted(df["name"].dropna().unique().tolist())
+)
+
 st.subheader("How It Works")
 
 st.markdown("""
 - A machine learning model was trained on physicochemical property data from long-acting and non-long-acting FDA-approved small-molecule drugs.
-
 - The model uses patterns in FDA-approved drugs to predict whether a molecule might be long-acting based on its physicochemical properties.
-
 - The model's threshold between predicted non-long-acting and predicted long-acting is **0.05 (5%)**.
-
 - **Model Confidence Interpretation**
     - **≥ 50%:** Likely a Very Strong Candidate
     - **20–50%:** Likely a Strong Candidate
@@ -57,8 +59,6 @@ st.markdown("""
     - **1–5% (not including exactly 5%):** Likely a Challenging Candidate
     - **< 1%:** Likely a Very Challenging Candidate
 """)
-
-drug_name = st.text_input("Drug Name")
 
 if drug_name:
 
