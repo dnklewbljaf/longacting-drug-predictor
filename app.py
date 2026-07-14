@@ -124,4 +124,31 @@ if drug_name:
         properties = pd.DataFrame({
             "Property": [
                 "Molecular Weight",
-                "Polar Surface 
+                "Polar Surface Area",
+                "LogP",
+                "Solubility",
+                "Acidic pKa",
+                "Basic pKa",
+                "Fraction Unionized Acid",
+                "Fraction Unionized Base",
+                "H-Bond Ratio",
+                "Melting Point"
+            ],
+            "Value": [
+                row["MolecularWeight_g_mol_Combined_Avg"],
+                row["PolarSurfaceArea_A2_Combined_Avg"],
+                row["LogP_Combined_Avg"],
+                row["Solubility_g_L_Combined_Avg"],
+                row["Acidic_pKa_Combined_Avg"],
+                row["Basic_pKa_Combined_Avg"],
+                row["FractionUnionized_Acid_pH7_4_Combined_Avg"],
+                row["FractionUnionized_Base_pH7_4_Combined_Avg"],
+                row["HBondRatio_Donor_Acceptor_Combined_Avg"],
+                row["MeltingPoint_C_Combined_Avg"]
+            ]
+        })
+
+        st.dataframe(
+            properties,
+            use_container_width=True
+        )
