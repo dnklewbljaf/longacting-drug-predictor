@@ -12,6 +12,23 @@ def load_data():
 
 df = load_data()
 
+def get_interpretation(probability):
+
+    if probability >= 0.50:
+        return "Likely a Very Strong Candidate"
+
+    elif probability >= 0.20:
+        return "Likely a Strong Candidate"
+
+    elif probability >= 0.05:
+        return "Likely a Moderate Candidate"
+
+    elif probability >= 0.01:
+        return "Likely a Challenging Candidate"
+
+    else:
+        return "Likely a Very Challenging Candidate"
+
 st.title("Long-Acting Drug Predictor")
 
 st.write(
@@ -23,6 +40,20 @@ st.write(
     - Key factors influencing the prediction
     """
 )
+
+st.markdown("""
+### How It Works
+
+    - A machine learning model was trained on physicochemical property data from long-acting and non-long-acting FDA-approved small-molecule drugs.
+    - The model uses patterns in FDA-approved drugs to predict whether a molecule might be long-acting based on its physicochemical properties.
+    - The model's threshold between predicted non-long-acting and predicted long-acting is **0.05 (5%)**.
+    - **Model Confidence Interpretation**
+       - **≥ 50%:** Likely a Very Strong Candidate
+       - **20–50%:** Likely a Strong Candidate
+       - **5–20%:** Likely a Moderate Candidate
+       - **1–5% (not including exactly 5%):** Likely a Challenging Candidate
+       - **< 1%:** Likely a Very Challenging Candidate
+""")
 
 drug_name = st.text_input("Drug Name")
 
@@ -49,10 +80,16 @@ if drug_name:
         else:
             st.warning(row["Prediction"])
 
-        st.metric(
-            "Model Confidence",
-            f"{row['Probability']:.1%}"
-        )
+       probability = row["Probability"]
+
+st.metric(
+    "Model Confidence",
+    f"{probability:.2%}"
+)
+
+st.info(
+    f"Interpretation: {get_interpretation(probability)}"
+)
 
         st.header("Why the Model Predicted This")
 
