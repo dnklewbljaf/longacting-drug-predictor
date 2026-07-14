@@ -80,7 +80,7 @@ if drug_name:
         else:
             st.warning(row["Prediction"])
 
-       probability = row["Probability"]
+probability = row["Probability"]
 
 st.metric(
     "Model Confidence",
