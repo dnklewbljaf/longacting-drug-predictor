@@ -91,7 +91,7 @@ st.info(
     f"Interpretation: {get_interpretation(probability)}"
 )
 
-        st.header("Why the Model Predicted This")
+st.header("Why the Model Predicted This")
 
         reasons = []
 
